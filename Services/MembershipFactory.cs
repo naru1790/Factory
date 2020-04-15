@@ -6,21 +6,11 @@ namespace Factory.Services
 {
     public class MembershipFactory : IMembershipFactory
     {
-        private readonly Func<FreeMembership> _free;
-        private readonly Func<BronzeMembership> _bronze;
-        private readonly Func<SilverMembership> _silver;
-        private readonly Func<GoldMembership> _gold;
+        private readonly Func<Type, IMembership> _resolver;
 
-        public MembershipFactory(
-            Func<FreeMembership> free,
-            Func<BronzeMembership> bronze,
-            Func<SilverMembership> silver,
-            Func<GoldMembership> gold)
+        public MembershipFactory(Func<Type, IMembership> resolver)
         {
-            _free = free;
-            _bronze = bronze;
-            _silver = silver;
-            _gold = gold;
+            _resolver = resolver;
         }
 
         public IMembership Create(MembershipType type)
@@ -28,13 +18,13 @@ namespace Factory.Services
             switch (type)
             {
                 case MembershipType.Free:
-                    return _free();
+                    return _resolver(typeof(FreeMembership));
                 case MembershipType.Bronze:
-                    return _bronze();
+                    return _resolver(typeof(BronzeMembership));
                 case MembershipType.Silver:
-                    return _silver();
+                    return _resolver(typeof(SilverMembership));
                 case MembershipType.Gold:
-                    return _gold();
+                    return _resolver(typeof(GoldMembership));
                 default:
                     throw new InvalidOperationException();
             }

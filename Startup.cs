@@ -22,24 +22,20 @@ namespace Factory
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            
+
             services.AddLogging();
 
             services
                 .AddTransient<IUserService, UserService>()
                 .AddTransient<IMembershipFactory, MembershipFactory>()
 
-                .AddTransient<FreeMembership>()
-                .AddSingleton<Func<FreeMembership>>(x => x.GetService<FreeMembership>)
+                .AddSingleton<FreeMembership>()
+                .AddSingleton<BronzeMembership>()
+                .AddSingleton<SilverMembership>()
+                .AddSingleton<GoldMembership>();
 
-                .AddTransient<BronzeMembership>()
-                .AddSingleton<Func<BronzeMembership>>(x => x.GetService<BronzeMembership>)
+            services.AddSingleton<Func<Type, IMembership>>(serviceProvider => type => (IMembership)serviceProvider.GetService(type));
 
-                .AddTransient<SilverMembership>()
-                .AddSingleton<Func<SilverMembership>>(x => x.GetService<SilverMembership>)
-
-                .AddTransient<GoldMembership>()
-                .AddSingleton<Func<GoldMembership>>(x => x.GetService<GoldMembership>);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
