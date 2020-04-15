@@ -1,4 +1,5 @@
 ﻿using System;
+using Factory.Models;
 using Factory.Services;
 using Factory.Services.Memberships;
 using Microsoft.AspNetCore.Builder;
@@ -22,24 +23,36 @@ namespace Factory
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            
+
             services.AddLogging();
 
             services
                 .AddTransient<IUserService, UserService>()
-                .AddTransient<IMembershipFactory, MembershipFactory>()
 
-                .AddTransient<FreeMembership>()
-                .AddSingleton<Func<FreeMembership>>(x => x.GetService<FreeMembership>)
+                .AddSingleton<FreeMembership>()
 
                 .AddTransient<BronzeMembership>()
-                .AddSingleton<Func<BronzeMembership>>(x => x.GetService<BronzeMembership>)
 
                 .AddTransient<SilverMembership>()
-                .AddSingleton<Func<SilverMembership>>(x => x.GetService<SilverMembership>)
 
-                .AddTransient<GoldMembership>()
-                .AddSingleton<Func<GoldMembership>>(x => x.GetService<GoldMembership>);
+                .AddTransient<GoldMembership>();
+
+            services.AddTransient<Func<MembershipType, IMembership>>(serviceProvider => implementationType =>
+            {
+                switch (implementationType)
+                {
+                    case MembershipType.Free:
+                        return serviceProvider.GetService<FreeMembership>();
+                    case MembershipType.Bronze:
+                        return serviceProvider.GetService<BronzeMembership>();
+                    case MembershipType.Gold:
+                        return serviceProvider.GetService<GoldMembership>();
+                    case MembershipType.Silver:
+                        return serviceProvider.GetService<SilverMembership>();
+                    default:
+                        return serviceProvider.GetService<IMembership>();
+                }
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

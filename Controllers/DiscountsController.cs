@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Factory.Models;
 using Factory.Services;
 using Factory.Services.Memberships;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +12,11 @@ namespace Factory.Controllers
     public class DiscountsController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IMembershipFactory _membershipFactory;
-
-        public DiscountsController(IUserService userService, IMembershipFactory membershipFactory)
+        private readonly Func<MembershipType, IMembership> _memberShipResolver;
+        public DiscountsController(IUserService userService, Func<MembershipType, IMembership> memberShipResolver)
         {
             _userService = userService;
-            _membershipFactory = membershipFactory;
+            _memberShipResolver = memberShipResolver;
         }
 
         // GET api/discounts
@@ -23,9 +24,9 @@ namespace Factory.Controllers
         public ActionResult<IMembership> Get()
         {
             var user = _userService.Get();
-            var membership = _membershipFactory.Create(user.MembershipType);
-            
-            return Ok(membership.GetDiscount());
+            var membership = _memberShipResolver(MembershipType.Free).GetDiscount();
+
+            return Ok(membership);
         }
     }
 }
